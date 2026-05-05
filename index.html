@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAC - Teoría de Conjuntos</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brandBlue: '#1951CB',
+                        brandGreen: '#1CA887'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbars */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+        .dark-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .dark-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+        
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-20 shrink-0">
+        <!-- Logo / Title -->
+        <div class="p-6 border-b border-slate-800">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-brandBlue rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/30">
+                    &sum;
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tight">RBAC</h1>
+            </div>
+            <p class="text-[11px] font-bold text-brandGreen uppercase tracking-[0.15em] ml-13">Teoría de Conjuntos</p>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="flex-grow py-4 overflow-y-auto dark-scrollbar space-y-1 px-3" id="sidebar-nav">
+            <!-- Nav items injected via JS -->
+        </nav>
+        
+        <!-- Authors -->
+        <div class="p-6 border-t border-slate-800 bg-slate-950/50">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Desarrollado por:</p>
+            <ul class="text-xs text-slate-400 space-y-2 font-medium">
+                <li class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-slate-600"></div> Juan Rodriguez</li>
+                <li class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-slate-600"></div> Nieves Perez</li>
+                <li class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-slate-600"></div> Alejandra Falcón</li>
+                <li class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-slate-600"></div> Miguel Oliver</li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col relative h-full bg-slate-50">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8 shadow-sm justify-between shrink-0 z-10">
+            <h2 id="topbar-title" class="text-xl font-bold text-slate-800">Cargando...</h2>
+            <div class="flex items-center gap-4">
+                <span id="topbar-subtitle" class="text-sm font-bold text-brandGreen uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full"></span>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-grow overflow-y-auto p-8 lg:p-12 custom-scrollbar relative" id="main-content-area">
+            <!-- Content injected via JS -->
+            <div id="dynamic-content" class="fade-in-up max-w-6xl mx-auto"></div>
+        </div>
+    </main>
+
+    <script>
+        // Data Structure for Dashboard
+        const sections = [
+            {
+                id: "intro",
+                navTitle: "Introducción",
+                title: "Control de Acceso Basado en Roles (RBAC)",
+                subtitle: "Planteamiento del Problema",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`,
+                content: `
+                    <div class="flex flex-col xl:flex-row gap-10 items-center min-h-[60vh]">
+                        <div class="flex-1 space-y-8">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-sm uppercase tracking-wider">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                Objetivo del Proyecto
+                            </div>
+                            <h3 class="text-4xl lg:text-5xl font-black text-slate-800 leading-[1.15]">¿Cómo gestionamos los permisos de 3 roles distintos sin cruzar accesos?</h3>
+                            
+                            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-xl shadow-sm">
+                                <h4 class="font-bold text-indigo-800 mb-1 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                    ¿Qué es RBAC?
+                                </h4>
+                                <p class="text-indigo-900 text-[0.95rem] leading-relaxed">
+                                    <strong>Role-Based Access Control (Control de Acceso Basado en Roles)</strong> es un modelo de ciberseguridad corporativo donde los accesos no se otorgan usuario por usuario, sino que se agrupan en <em>roles estandarizados</em>. Un usuario hereda automáticamente todos los permisos del rol que se le asigne.
+                                </p>
+                            </div>
+
+                            <p class="text-xl text-slate-600 leading-relaxed font-light">
+                                Para resolver la complejidad de administrar este modelo en nuestra plataforma, aplicamos principios matemáticos fundamentales de la <strong>Teoría de Conjuntos</strong>. 
+                                Modelamos cada rol como un conjunto estricto de accesos a pantallas específicas.
+                            </p>
+                        </div>
+                        <div class="flex-1 w-full xl:w-auto">
+                            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative w-full transform hover:-translate-y-2 transition-transform duration-300">
+                                <div class="absolute -top-5 -left-5 bg-brandBlue text-white p-3.5 rounded-2xl shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                                </div>
+                                <h4 class="text-xl font-bold text-slate-800 mb-4 ml-8">Análisis de Impacto</h4>
+                                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                                    <p class="text-slate-600 font-medium leading-relaxed">
+                                        En la industria, el fallo de control de acceso (Broken Access Control) es una de las vulnerabilidades más críticas. 
+                                    </p>
+                                    <p class="text-slate-600 font-medium leading-relaxed">
+                                        Al trasladar el diseño de permisos de un enfoque empírico a un <strong>modelo matemático formal</strong> usando Teoría de Conjuntos, eliminamos la ambigüedad, previniendo escaladas de privilegios y facilitando auditorías precisas.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "definicion",
+                navTitle: "Definición de Conjuntos",
+                title: "Definición por Extensión",
+                subtitle: "Asignación de Pantallas",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+                content: `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-100 hover:shadow-lg transition-all group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-black text-lg">P</div>
+                                <div><h4 class="font-black text-xl text-slate-700">Público</h4></div>
+                            </div>
+                            <p class="text-sm font-mono bg-slate-50 p-3 rounded-xl border border-slate-100">{ LandingScreen, Ayuda, Soporte }</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-blue-100 hover:shadow-lg transition-all group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-black text-lg">E</div>
+                                <div><h4 class="font-black text-xl text-blue-700">Estudiante</h4></div>
+                            </div>
+                            <p class="text-sm font-mono bg-blue-50 p-3 rounded-xl border border-blue-100 text-blue-900">{ Cartelera, MisTutorias, Sugerencias, Bolsa, Comunidad... }</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-emerald-100 hover:shadow-lg transition-all group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-lg">T</div>
+                                <div><h4 class="font-black text-xl text-emerald-700">Tutor</h4></div>
+                            </div>
+                            <p class="text-sm font-mono bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-emerald-900"><span class="font-bold">Conjunto E</span> ∪ { TableroTutor, AceptarSolicitud... }</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-purple-100 hover:shadow-lg transition-all group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 font-black text-lg">A</div>
+                                <div><h4 class="font-black text-xl text-purple-700">Admin</h4></div>
+                            </div>
+                            <p class="text-sm font-mono bg-purple-50 p-3 rounded-xl border border-purple-100 text-purple-900"><span class="font-bold">Conjunto E</span> ∪ { Metricas, TribunalBaneos... }</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis Estructural</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                Al definir los permisos <em>por extensión</em> evitamos "rutas fantasma". De manera realista, estructurar jerarquías mediante conjuntos anidados (Tutor y Admin heredando del Estudiante) reduce la redundancia de código en los middlewares del sistema, haciendo que la base de código sea más mantenible y menos propensa a errores humanos de configuración.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "interseccion",
+                navTitle: "Intersección",
+                title: "Intersección ( T ∩ A )",
+                subtitle: "Permisos Compartidos",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+                content: `
+                    <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center mb-8 overflow-hidden relative">
+                        <div class="absolute top-0 left-0 w-full h-3 bg-brandBlue"></div>
+                        <h3 class="text-6xl font-black text-brandBlue mb-4 tracking-tighter">T ∩ A = E</h3>
+                        <p class="text-lg text-slate-500 mb-6 font-medium">Elementos en común entre Tutores y Administradores.</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-left max-w-4xl mx-auto shadow-inner">
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-black text-slate-700 uppercase tracking-widest mb-4 shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-brandBlue"></span> Conjunto E
+                            </span>
+                            <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
+                                { Cartelera, MisTutorias, Sugerencias, Comunidad, Perfil, Notificaciones... }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis de Superficie de Riesgo</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                La <strong>Intersección</strong> nos permite identificar los componentes base (el conjunto Estudiante). De manera realista, si descubrimos una vulnerabilidad en estas pantallas, sabemos matemáticamente que afectará a TODOS los roles autenticados. Esto ayuda a los equipos de ciberseguridad a priorizar parches y auditorías en este subconjunto compartido.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "union",
+                navTitle: "Unión",
+                title: "Unión de Conjuntos ( E ∪ T )",
+                subtitle: "Totalidad de Accesos",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>`,
+                content: `
+                    <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center mb-8 overflow-hidden relative">
+                        <div class="absolute top-0 left-0 w-full h-3 bg-brandGreen"></div>
+                        <h3 class="text-6xl font-black text-brandGreen mb-4 tracking-tighter">E ∪ T = T</h3>
+                        <p class="text-lg text-slate-500 mb-6 font-medium">Agrupación total de la experiencia del Tutor.</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-left max-w-4xl mx-auto shadow-inner">
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-black text-slate-700 uppercase tracking-widest mb-4 shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-brandGreen"></span> Totalidad del Tutor
+                            </span>
+                            <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
+                                { Cartelera, Perfil, Notificaciones..., <strong class="text-brandGreen">TableroTutor, AceptarSolicitud, DetalleClase</strong> }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis de Experiencia y QA</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                La operación de <strong>Unión</strong> es vital para QA (Aseguramiento de Calidad) y diseñadores UX. Al mapear E ∪ T, obtenemos el árbol de navegación completo del Tutor. Realistamente, esto asegura que las pruebas de integración cubran todo el viaje del usuario sin dejar puntos ciegos entre la funcionalidad base y las herramientas especializadas.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "diferencia",
+                navTitle: "Comp. Relativo",
+                title: "Complemento Relativo ( A - T )",
+                subtitle: "Aislamiento de Privilegios",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>`,
+                content: `
+                    <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center mb-8 overflow-hidden relative">
+                        <div class="absolute top-0 left-0 w-full h-3 bg-purple-500"></div>
+                        <h3 class="text-6xl font-black text-purple-600 mb-4 tracking-tighter">A - T</h3>
+                        <p class="text-lg text-slate-500 mb-6 font-medium">Elementos exclusivos de Admin (sin tutoría).</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-left max-w-4xl mx-auto shadow-inner">
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-black text-slate-700 uppercase tracking-widest mb-4 shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-purple-500"></span> Exclusivo Admin
+                            </span>
+                            <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
+                                { <strong class="text-purple-700">Metricas, TribunalBaneos, BuzonPostulaciones, Quejas</strong> }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis de "Zero Trust" (Confianza Cero)</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                Aislar los privilegios mediante el <strong>Complemento Relativo</strong> nos permite proteger el "Centro de Mando". En la práctica, el conjunto resultante de (A - T) contiene operaciones críticas que se pueden segregar detrás de firewalls adicionales (WAF), autenticación multifactor (MFA) o VPNs, aplicando el principio de Confianza Cero solo a los endpoints sensibles.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "simetrica",
+                navTitle: "Dif. Simétrica",
+                title: "Diferencia Simétrica ( T Δ A )",
+                subtitle: "Rutas de Especialización",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 4.8 17 6 19 6a1 1 0 0 1 1 1z"/></svg>`,
+                content: `
+                    <div class="mb-8 text-center">
+                        <h3 class="text-4xl lg:text-5xl font-black text-slate-800 mb-3 tracking-tighter">T Δ A = (T - A) ∪ (A - T)</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-orange-500"></div>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 border border-orange-100 rounded-full text-xs font-black text-orange-700 uppercase tracking-widest mb-4">
+                                De Tutor ( T - A )
+                            </span>
+                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-orange-600 font-bold">TableroTutor, DetalleClase...</span> }</p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-purple-500"></div>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-xs font-black text-purple-700 uppercase tracking-widest mb-4">
+                                De Admin ( A - T )
+                            </span>
+                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-purple-600 font-bold">Metricas, TribunalBaneos...</span> }</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis de Arquitectura Microservicios</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                La <strong>Diferencia Simétrica</strong> aísla especializaciones puras. De manera realista, si el sistema escala a una arquitectura de Microservicios, este conjunto determina exactamente qué funciones deben desacoplarse en servicios independientes, optimizando recursos y evitando cuellos de botella.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "disjuntos",
+                navTitle: "Conjuntos Disjuntos",
+                title: "Conjuntos Disjuntos ( P ∩ E )",
+                subtitle: "La Barrera de Autenticación",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`,
+                content: `
+                    <div class="bg-white p-10 rounded-3xl shadow-xl border border-red-100 text-center mb-8 overflow-hidden relative">
+                        <div class="absolute top-0 left-0 w-full h-3 bg-red-500"></div>
+                        <h3 class="text-6xl font-black text-red-500 mb-4 tracking-tighter">P ∩ E = ∅</h3>
+                        <p class="text-lg text-slate-600 mb-6 font-medium">No existe pantalla que sea simultáneamente pública y privada.</p>
+                        <div class="flex justify-center items-center h-24 bg-red-50 rounded-2xl border-2 border-red-100 shadow-inner max-w-4xl mx-auto">
+                            <span class="text-4xl font-black text-red-600/60 tracking-[0.25em] uppercase">Conjunto Vacío</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-md border-l-[6px] border-brandGreen flex items-start gap-4">
+                        <div class="mt-1 text-brandGreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white mb-2">Análisis de Seguridad y Enrutamiento</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                Comprobar que P y E son <strong>Conjuntos Disjuntos</strong> (resultado ∅) valida matemáticamente el enrutamiento. En una aplicación real, esto garantiza que los <code>Guardians</code> de rutas estén correctamente configurados, impidiendo fugas de datos donde un usuario no autenticado acceda mediante URL directa a un endpoint privado.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: "simulador",
+                navTitle: "Simulador Binario",
+                title: "Simulador: Función Característica",
+                subtitle: "Operaciones con Vectores Binarios Fijos",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" x2="15" y1="9" y2="9"/><line x1="9" x2="15" y1="15" y2="15"/></svg>`,
+                content: `
+                    <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 mb-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            <!-- Conjunto A -->
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>Conjunto A (Seleccionar Pantallas)</h4>
+                                <div class="grid grid-cols-2 gap-2 text-sm" id="sim-checkboxes-a">
+                                    <!-- Generado por JS -->
+                                </div>
+                            </div>
+                            <!-- Conjunto B -->
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500"></span>Conjunto B (Seleccionar Pantallas)</h4>
+                                <div class="grid grid-cols-2 gap-2 text-sm" id="sim-checkboxes-b">
+                                    <!-- Generado por JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Control -->
+                        <div class="flex flex-wrap gap-4 justify-center mb-8">
+                            <button onclick="simularOperacion('union')" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-md border-b-4 border-slate-900 active:translate-y-1 active:border-b-0">Unión (A ∪ B)</button>
+                            <button onclick="simularOperacion('interseccion')" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-md border-b-4 border-slate-900 active:translate-y-1 active:border-b-0">Intersección (A ∩ B)</button>
+                            <button onclick="simularOperacion('diferencia')" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-md border-b-4 border-slate-900 active:translate-y-1 active:border-b-0">Comp. Relativo (A - B)</button>
+                            <button onclick="simularOperacion('simetrica')" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-md border-b-4 border-slate-900 active:translate-y-1 active:border-b-0">Dif. Simétrica (A Δ B)</button>
+                        </div>
+
+                        <!-- Resultados -->
+                        <div class="bg-slate-900 rounded-2xl p-8 shadow-inner overflow-hidden relative" id="sim-resultados" style="display: none;">
+                            <h4 class="text-white font-black text-xl mb-6 border-b border-slate-700 pb-4" id="sim-titulo-op">Resultados</h4>
+                            
+                            <div class="space-y-4 font-mono text-sm lg:text-base mb-8 overflow-x-auto pb-4">
+                                <div class="flex items-center gap-4 min-w-max">
+                                    <span class="text-blue-400 font-bold w-16">Vec A:</span>
+                                    <div class="flex gap-1.5" id="sim-vec-a"></div>
+                                </div>
+                                <div class="flex items-center gap-4 min-w-max">
+                                    <span class="text-emerald-400 font-bold w-16">Vec B:</span>
+                                    <div class="flex gap-1.5" id="sim-vec-b"></div>
+                                </div>
+                                <div class="h-px bg-slate-700 w-full my-4"></div>
+                                <div class="flex items-center gap-4 min-w-max">
+                                    <span class="text-amber-400 font-black w-16">RST:</span>
+                                    <div class="flex gap-1.5" id="sim-vec-r"></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                                <h5 class="text-slate-400 text-xs uppercase tracking-widest font-bold mb-3 flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h10"/><path d="M9 4v16"/><path d="m3 9 3 3-3 3"/></svg> Decodificación a Pantallas Naturales</h5>
+                                <p class="text-white font-mono leading-relaxed bg-slate-900 p-4 rounded-lg shadow-inner" id="sim-pantallas-r"></p>
+                            </div>
+                        </div>
+
+                        <!-- Código Fuente -->
+                        <div class="mt-12 bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-700">
+                            <div class="bg-slate-800 px-6 py-3 flex items-center justify-between border-b border-slate-700">
+                                <h4 class="text-slate-300 font-bold text-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                    Código Lógico del Simulador (JavaScript)
+                                </h4>
+                                <div class="flex gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                </div>
+                            </div>
+                            <div class="p-6 overflow-x-auto text-sm">
+                                <pre><code class="text-slate-300 font-mono leading-relaxed"><span class="text-purple-400">for</span> (<span class="text-blue-400">let</span> i = <span class="text-orange-400">0</span>; i < universalSet.<span class="text-sky-300">length</span>; i++) {
+    <span class="text-slate-500">// 1. Evaluar Función Característica a Binario (1 o 0)</span>
+    vecA[i] = document.<span class="text-amber-200">getElementById</span>(<span class="text-green-300">\`sim-a-\${i}\`</span>).<span class="text-sky-300">checked</span> ? <span class="text-orange-400">1</span> : <span class="text-orange-400">0</span>;
+    vecB[i] = document.<span class="text-amber-200">getElementById</span>(<span class="text-green-300">\`sim-b-\${i}\`</span>).<span class="text-sky-300">checked</span> ? <span class="text-orange-400">1</span> : <span class="text-orange-400">0</span>;
+
+    <span class="text-slate-500">// 2. Operaciones Lógicas Bit a Bit (Compuertas Lógicas)</span>
+    <span class="text-purple-400">if</span> (operacion === <span class="text-green-300">'union'</span>) {
+        vecResult[i] = vecA[i] <span class="text-pink-400">|</span> vecB[i]; <span class="text-slate-500">// OR</span>
+    } <span class="text-purple-400">else if</span> (operacion === <span class="text-green-300">'interseccion'</span>) {
+        vecResult[i] = vecA[i] <span class="text-pink-400">&</span> vecB[i]; <span class="text-slate-500">// AND</span>
+    } <span class="text-purple-400">else if</span> (operacion === <span class="text-green-300">'diferencia'</span>) {
+        vecResult[i] = vecA[i] <span class="text-pink-400">&</span> (<span class="text-pink-400">~</span>vecB[i] <span class="text-pink-400">&</span> <span class="text-orange-400">1</span>); <span class="text-slate-500">// AND NOT (Complemento Relativo)</span>
+    } <span class="text-purple-400">else if</span> (operacion === <span class="text-green-300">'simetrica'</span>) {
+        vecResult[i] = vecA[i] <span class="text-pink-400">^</span> vecB[i]; <span class="text-slate-500">// XOR</span>
+    }
+
+    <span class="text-slate-500">// 3. Decodificar Binario a Números Naturales / Pantallas</span>
+    <span class="text-purple-400">if</span> (vecResult[i] === <span class="text-orange-400">1</span>) {
+        resultPantallas.<span class="text-amber-200">push</span>(universalSet[i]);
+    }
+}</code></pre>
+                            </div>
+                        </div>
+
+                    </div>
+                `
+            },
+            {
+                id: "conclusion",
+                navTitle: "Conclusión",
+                title: "Impacto del Análisis Matemático",
+                subtitle: "Valor en el Desarrollo de Software",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>`,
+                content: `
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-20 -top-20 opacity-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        </div>
+                        <h3 class="text-4xl font-black text-white mb-8 border-b border-slate-700 pb-4">Conclusión Tecnológica</h3>
+                        
+                        <div class="space-y-6 relative z-10">
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-brandBlue p-3 rounded-xl mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-blue-400 mb-1">Seguridad Demostrable</h4>
+                                    <p class="text-slate-300 leading-relaxed">No dependemos de configuraciones manuales propensas a errores. Al tener un modelo formal (RBAC matemático), el sistema es seguro por diseño y facilita el cumplimiento de normativas estrictas de seguridad de la información.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-brandGreen p-3 rounded-xl mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-emerald-400 mb-1">Escalabilidad de Código</h4>
+                                    <p class="text-slate-300 leading-relaxed">Al integrar un nuevo rol, no es necesario reescribir validaciones complejas. Bastará con definir su conjunto y establecer las operaciones relacionales frente a los existentes, garantizando escalabilidad pura a nivel arquitectónico.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-purple-600 p-3 rounded-xl mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" x2="15" y1="9" y2="9"/><line x1="9" x2="15" y1="15" y2="15"/></svg></div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-purple-400 mb-1">Mantenibilidad para DevOps</h4>
+                                    <p class="text-slate-300 leading-relaxed">El uso de Uniones, Diferencias y Disjuntos ayuda a los equipos de infraestructura a diseñar redes segmentadas eficientes. Esto erradica el llamado "espagueti de permisos" (Permisology), reduciendo enormemente la deuda técnica.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentActiveId = null;
+
+        function initSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            let html = '';
+            
+            sections.forEach((sec, index) => {
+                html += `
+                    <button 
+                        onclick="loadSection('${sec.id}')"
+                        id="nav-btn-${sec.id}"
+                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-left
+                               hover:bg-slate-800 hover:text-white"
+                    >
+                        <div class="text-slate-500 group-hover:text-brandGreen transition-colors" id="nav-icon-${sec.id}">
+                            ${sec.icon}
+                        </div>
+                        <span class="font-medium text-sm tracking-wide">${sec.navTitle}</span>
+                    </button>
+                `;
+            });
+            
+            nav.innerHTML = html;
+        }
+
+        function loadSection(id) {
+            const section = sections.find(s => s.id === id);
+            if (!section || currentActiveId === id) return;
+
+            // Update Active State in Sidebar
+            if (currentActiveId) {
+                const prevBtn = document.getElementById(`nav-btn-${currentActiveId}`);
+                const prevIcon = document.getElementById(`nav-icon-${currentActiveId}`);
+                prevBtn.classList.remove('bg-brandBlue', 'text-white', 'shadow-md');
+                prevBtn.classList.add('hover:bg-slate-800');
+                prevIcon.classList.replace('text-white', 'text-slate-500');
+            }
+
+            const activeBtn = document.getElementById(`nav-btn-${id}`);
+            const activeIcon = document.getElementById(`nav-icon-${id}`);
+            activeBtn.classList.add('bg-brandBlue', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('hover:bg-slate-800');
+            activeIcon.classList.replace('text-slate-500', 'text-white');
+            activeIcon.classList.remove('group-hover:text-brandGreen');
+
+            currentActiveId = id;
+
+            // Update Topbar
+            document.getElementById('topbar-title').innerText = section.title;
+            document.getElementById('topbar-subtitle').innerText = section.subtitle;
+
+            // Update Main Content with Animation
+            const container = document.getElementById('dynamic-content');
+            
+            // Remove animation class to reset
+            container.classList.remove('fade-in-up');
+            
+            // Force reflow
+            void container.offsetWidth;
+            
+            container.innerHTML = section.content;
+            container.classList.add('fade-in-up');
+
+            if (id === 'simulador') {
+                initSimulador();
+            }
+
+            // Scroll to top of main area
+            document.getElementById('main-content-area').scrollTop = 0;
+        }
+
+        const universalSet = [
+            "LandingScreen", "Ayuda", "Cartelera", "MisTutorias", 
+            "Perfil", "SugerirTutoria", "TableroTutor", "DetalleClase", 
+            "Metricas", "TribunalBaneos"
+        ];
+
+        function initSimulador() {
+            const containerA = document.getElementById('sim-checkboxes-a');
+            const containerB = document.getElementById('sim-checkboxes-b');
+            if(!containerA || !containerB) return;
+            
+            if(containerA.children.length > 0) return; // Ya inicializado
+
+            let htmlA = '';
+            let htmlB = '';
+
+            universalSet.forEach((pantalla, index) => {
+                htmlA += `
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-200 p-1.5 rounded transition-colors group">
+                        <input type="checkbox" id="sim-a-${index}" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300">
+                        <span class="truncate text-slate-700 group-hover:text-slate-900 font-medium">${pantalla}</span>
+                    </label>`;
+                htmlB += `
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-200 p-1.5 rounded transition-colors group">
+                        <input type="checkbox" id="sim-b-${index}" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                        <span class="truncate text-slate-700 group-hover:text-slate-900 font-medium">${pantalla}</span>
+                    </label>`;
+            });
+
+            containerA.innerHTML = htmlA;
+            containerB.innerHTML = htmlB;
+        }
+
+        function simularOperacion(operacion) {
+            const vecA = [];
+            const vecB = [];
+            const vecResult = [];
+            const resultPantallas = [];
+
+            // 1. Obtener Vectores Binarios (Función Característica)
+            for (let i = 0; i < universalSet.length; i++) {
+                vecA[i] = document.getElementById(`sim-a-${i}`).checked ? 1 : 0;
+                vecB[i] = document.getElementById(`sim-b-${i}`).checked ? 1 : 0;
+
+                // 2. Operación Lógica Bit a Bit
+                if (operacion === 'union') {
+                    vecResult[i] = vecA[i] | vecB[i];
+                } else if (operacion === 'interseccion') {
+                    vecResult[i] = vecA[i] & vecB[i];
+                } else if (operacion === 'diferencia') {
+                    vecResult[i] = vecA[i] & (~vecB[i] & 1); // A - B => A AND NOT B
+                } else if (operacion === 'simetrica') {
+                    vecResult[i] = vecA[i] ^ vecB[i]; // XOR
+                }
+
+                // 3. Decodificar Vector Resultante a Pantallas Naturales
+                if (vecResult[i] === 1) {
+                    resultPantallas.push(universalSet[i]);
+                }
+            }
+
+            // 4. Actualizar Interfaz (Resultados)
+            document.getElementById('sim-resultados').style.display = 'block';
+            
+            const titles = {
+                'union': 'Unión ( A ∪ B )',
+                'interseccion': 'Intersección ( A ∩ B )',
+                'diferencia': 'Comp. Relativo ( A - B )',
+                'simetrica': 'Diferencia Simétrica ( A Δ B )'
+            };
+            document.getElementById('sim-titulo-op').innerText = `Resultado: ${titles[operacion]}`;
+
+            // Renderizar cuadritos de bits
+            const renderVec = (vec, colorClass) => vec.map(b => `<div class="w-8 h-8 flex items-center justify-center rounded text-sm font-bold transition-all ${b ? colorClass : 'bg-slate-800 text-slate-500 border border-slate-700'}">${b}</div>`).join('');
+
+            document.getElementById('sim-vec-a').innerHTML = renderVec(vecA, 'bg-blue-600 text-white shadow-[0_0_8px_rgba(37,99,235,0.4)]');
+            document.getElementById('sim-vec-b').innerHTML = renderVec(vecB, 'bg-emerald-600 text-white shadow-[0_0_8px_rgba(5,150,105,0.4)]');
+            document.getElementById('sim-vec-r').innerHTML = renderVec(vecResult, 'bg-amber-500 text-slate-900 shadow-[0_0_12px_rgba(245,158,11,0.6)] scale-110');
+
+            document.getElementById('sim-pantallas-r').innerText = resultPantallas.length > 0 
+                ? `{ ${resultPantallas.join(', ')} }`
+                : '∅ (Conjunto Vacío)';
+        }
+
+        // Init
+        window.onload = () => {
+            initSidebar();
+            // Load first section
+            loadSection(sections[0].id);
+        };
+    </script>
+</body>
+</html>
