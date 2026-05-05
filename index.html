@@ -158,28 +158,28 @@
                                 <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-black text-lg">P</div>
                                 <div><h4 class="font-black text-xl text-slate-700">Público</h4></div>
                             </div>
-                            <p class="text-sm font-mono bg-slate-50 p-3 rounded-xl border border-slate-100">{ LandingScreen, Ayuda, Soporte }</p>
+                            <p class="text-sm font-mono bg-slate-50 p-3 rounded-xl border border-slate-100">{ LandingScreen, Ayuda }</p>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-blue-100 hover:shadow-lg transition-all group">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-black text-lg">E</div>
                                 <div><h4 class="font-black text-xl text-blue-700">Estudiante</h4></div>
                             </div>
-                            <p class="text-sm font-mono bg-blue-50 p-3 rounded-xl border border-blue-100 text-blue-900">{ Cartelera, MisTutorias, Sugerencias, Bolsa, Comunidad... }</p>
+                            <p class="text-sm font-mono bg-blue-50 p-3 rounded-xl border border-blue-100 text-blue-900">{ Cartelera, MisTutorias, Perfil, SugerirTutoria }</p>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-emerald-100 hover:shadow-lg transition-all group">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-lg">T</div>
                                 <div><h4 class="font-black text-xl text-emerald-700">Tutor</h4></div>
                             </div>
-                            <p class="text-sm font-mono bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-emerald-900"><span class="font-bold">Conjunto E</span> ∪ { TableroTutor, AceptarSolicitud... }</p>
+                            <p class="text-sm font-mono bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-emerald-900">{ Cartelera, MisTutorias, Perfil, SugerirTutoria, TableroTutor, DetalleClase }</p>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-purple-100 hover:shadow-lg transition-all group">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 font-black text-lg">A</div>
                                 <div><h4 class="font-black text-xl text-purple-700">Admin</h4></div>
                             </div>
-                            <p class="text-sm font-mono bg-purple-50 p-3 rounded-xl border border-purple-100 text-purple-900"><span class="font-bold">Conjunto E</span> ∪ { Metricas, TribunalBaneos... }</p>
+                            <p class="text-sm font-mono bg-purple-50 p-3 rounded-xl border border-purple-100 text-purple-900">{ Cartelera, MisTutorias, Perfil, SugerirTutoria, Metricas, TribunalBaneos }</p>
                         </div>
                     </div>
                     
@@ -212,7 +212,7 @@
                                 <span class="w-2 h-2 rounded-full bg-brandBlue"></span> Conjunto E
                             </span>
                             <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
-                                { Cartelera, MisTutorias, Sugerencias, Comunidad, Perfil, Notificaciones... }
+                                { Cartelera, MisTutorias, Perfil, SugerirTutoria }
                             </p>
                         </div>
                     </div>
@@ -246,7 +246,7 @@
                                 <span class="w-2 h-2 rounded-full bg-brandGreen"></span> Totalidad del Tutor
                             </span>
                             <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
-                                { Cartelera, Perfil, Notificaciones..., <strong class="text-brandGreen">TableroTutor, AceptarSolicitud, DetalleClase</strong> }
+                                { Cartelera, MisTutorias, Perfil, SugerirTutoria, <strong class="text-brandGreen">TableroTutor, DetalleClase</strong> }
                             </p>
                         </div>
                     </div>
@@ -280,7 +280,7 @@
                                 <span class="w-2 h-2 rounded-full bg-purple-500"></span> Exclusivo Admin
                             </span>
                             <p class="font-mono text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm text-sm">
-                                { <strong class="text-purple-700">Metricas, TribunalBaneos, BuzonPostulaciones, Quejas</strong> }
+                                { <strong class="text-purple-700">Metricas, TribunalBaneos</strong> }
                             </p>
                         </div>
                     </div>
@@ -315,7 +315,7 @@
                             <span class="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 border border-orange-100 rounded-full text-xs font-black text-orange-700 uppercase tracking-widest mb-4">
                                 De Tutor ( T - A )
                             </span>
-                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-orange-600 font-bold">TableroTutor, DetalleClase...</span> }</p>
+                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-orange-600 font-bold">TableroTutor, DetalleClase</span> }</p>
                         </div>
 
                         <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
@@ -323,7 +323,7 @@
                             <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-xs font-black text-purple-700 uppercase tracking-widest mb-4">
                                 De Admin ( A - T )
                             </span>
-                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-purple-600 font-bold">Metricas, TribunalBaneos...</span> }</p>
+                            <p class="text-sm font-mono text-slate-700 leading-relaxed">{ <span class="text-purple-600 font-bold">Metricas, TribunalBaneos</span> }</p>
                         </div>
                     </div>
 
